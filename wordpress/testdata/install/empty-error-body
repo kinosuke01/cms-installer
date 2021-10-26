@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja" xml:lang="ja">
+<head>
+	<meta name="viewport" content="width=device-width" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="robots" content="noindex,nofollow" />
+	<title>WordPress &rsaquo; インストール</title>
+	<link rel='stylesheet' id='dashicons-css'  href='https://localhost/blog/wp-includes/css/dashicons.min.css?ver=5.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='buttons-css'  href='https://localhost/blog/wp-includes/css/buttons.min.css?ver=5.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='forms-css'  href='https://localhost/blog/wp-admin/css/forms.min.css?ver=5.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='l10n-css'  href='https://localhost/blog/wp-admin/css/l10n.min.css?ver=5.8.1' type='text/css' media='all' />
+<link rel='stylesheet' id='install-css'  href='https://localhost/blog/wp-admin/css/install.min.css?ver=5.8.1' type='text/css' media='all' />
+</head>
+<body class="wp-core-ui">
+<p id="logo">WordPress</p>
+
+	<h1>ようこそ</h1>
+<p class="message">有効なユーザー名を入力してください。</p>
+<form id="setup" method="post" action="install.php?step=2" novalidate="novalidate">
+	<table class="form-table" role="presentation">
+		<tr>
+			<th scope="row"><label for="weblog_title">サイトのタイトル</label></th>
+			<td><input name="weblog_title" type="text" id="weblog_title" size="25" value="" /></td>
+		</tr>
+		<tr>
+			<th scope="row"><label for="user_login">ユーザー名</label></th>
+			<td>
+							<input name="user_name" type="text" id="user_login" size="25" value="" />
+				<p>ユーザー名には、半角英数字、スペース、下線、ハイフン、ピリオド、アットマーク (@) のみが使用できます。</p>
+							</td>
+		</tr>
+				<tr class="form-field form-required user-pass1-wrap">
+			<th scope="row">
+				<label for="pass1">
+					パスワード				</label>
+			</th>
+			<td>
+				<div class="wp-pwd">
+										<input type="password" name="admin_password" id="pass1" class="regular-text" autocomplete="off" data-reveal="1" data-pw="6wDyO9wvbe!oO#NZxU" aria-describedby="pass-strength-result" />
+					<button type="button" class="button wp-hide-pw hide-if-no-js" data-start-masked="0" data-toggle="0" aria-label="パスワードを隠す">
+						<span class="dashicons dashicons-hidden"></span>
+						<span class="text">非表示</span>
+					</button>
+					<div id="pass-strength-result" aria-live="polite"></div>
+				</div>
+				<p><span class="description important hide-if-no-js">
+				<strong>重要:</strong>
+								ログイン時にこのパスワードが必要になります。安全な場所に保管してください。</span></p>
+			</td>
+		</tr>
+		<tr class="form-field form-required user-pass2-wrap hide-if-js">
+			<th scope="row">
+				<label for="pass2">パスワードを再入力					<span class="description">(必須)</span>
+				</label>
+			</th>
+			<td>
+				<input name="admin_password2" type="password" id="pass2" autocomplete="off" />
+			</td>
+		</tr>
+		<tr class="pw-weak">
+			<th scope="row">パスワード確認</th>
+			<td>
+				<label>
+					<input type="checkbox" name="pw_weak" class="pw-checkbox" />
+					脆弱なパスワードの使用を確認				</label>
+			</td>
+		</tr>
+				<tr>
+			<th scope="row"><label for="admin_email">メールアドレス</label></th>
+			<td><input name="admin_email" type="email" id="admin_email" size="25" value="" />
+			<p>次に進む前にメールアドレスをもう一度確認してください。</p></td>
+		</tr>
+		<tr>
+			<th scope="row">検索エンジンでの表示</th>
+			<td>
+				<fieldset>
+					<legend class="screen-reader-text"><span>検索エンジンでの表示 </span></legend>
+											<label for="blog_public"><input name="blog_public" type="checkbox" id="blog_public" value="0"  />
+						検索エンジンがサイトをインデックスしないようにする</label>
+						<p class="description">このリクエストを尊重するかどうかは検索エンジンの設定によります。</p>
+									</fieldset>
+			</td>
+		</tr>
+	</table>
+	<p class="step"><input type="submit" name="Submit" id="submit" class="button button-large" value="WordPress をインストール"  /></p>
+	<input type="hidden" name="language" value="" />
+</form>
+	<script type="text/javascript">var t = document.getElementById('weblog_title'); if (t){ t.focus(); }</script>
+	<script type='text/javascript' src='https://localhost/blog/wp-includes/js/jquery/jquery.min.js?ver=3.6.0' id='jquery-core-js'></script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.3.2' id='jquery-migrate-js'></script>
+<script type='text/javascript' id='zxcvbn-async-js-extra'>
+/* <![CDATA[ */
+var _zxcvbnSettings = {"src":"https:\/\/wp.nekonome.me\/test\/wp-includes\/js\/zxcvbn.min.js"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/zxcvbn-async.min.js?ver=1.0' id='zxcvbn-async-js'></script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/dist/vendor/regenerator-runtime.min.js?ver=0.13.7' id='regenerator-runtime-js'></script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/dist/vendor/wp-polyfill.min.js?ver=3.15.0' id='wp-polyfill-js'></script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/dist/hooks.min.js?ver=a7edae857aab69d69fa10d5aef23a5de' id='wp-hooks-js'></script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/dist/i18n.min.js?ver=5f1269854226b4dd90450db411a12b79' id='wp-i18n-js'></script>
+<script type='text/javascript' id='wp-i18n-js-after'>
+wp.i18n.setLocaleData( { 'text direction\u0004ltr': [ 'ltr' ] } );
+</script>
+<script type='text/javascript' id='password-strength-meter-js-extra'>
+/* <![CDATA[ */
+var pwsL10n = {"unknown":"\u30d1\u30b9\u30ef\u30fc\u30c9\u5f37\u5ea6\u4e0d\u660e","short":"\u975e\u5e38\u306b\u8106\u5f31","bad":"\u8106\u5f31","good":"\u666e\u901a","strong":"\u5f37\u529b","mismatch":"\u4e0d\u4e00\u81f4"};
+/* ]]> */
+</script>
+<script type='text/javascript' id='password-strength-meter-js-translations'>
+( function( domain, translations ) {
+	var localeData = translations.locale_data[ domain ] || translations.locale_data.messages;
+	localeData[""].domain = domain;
+	wp.i18n.setLocaleData( localeData, domain );
+} )( "default", { "locale_data": { "messages": { "": {} } } } );
+</script>
+<script type='text/javascript' src='https://localhost/blog/wp-admin/js/password-strength-meter.min.js?ver=5.8.1' id='password-strength-meter-js'></script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/underscore.min.js?ver=1.13.1' id='underscore-js'></script>
+<script type='text/javascript' id='wp-util-js-extra'>
+/* <![CDATA[ */
+var _wpUtilSettings = {"ajax":{"url":"\/wp-admin\/admin-ajax.php"}};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://localhost/blog/wp-includes/js/wp-util.min.js?ver=5.8.1' id='wp-util-js'></script>
+<script type='text/javascript' id='user-profile-js-extra'>
+/* <![CDATA[ */
+var userProfileL10n = {"user_id":"0","nonce":""};
+/* ]]> */
+</script>
+<script type='text/javascript' id='user-profile-js-translations'>
+( function( domain, translations ) {
+	var localeData = translations.locale_data[ domain ] || translations.locale_data.messages;
+	localeData[""].domain = domain;
+	wp.i18n.setLocaleData( localeData, domain );
+} )( "default", { "locale_data": { "messages": { "": {} } } } );
+</script>
+<script type='text/javascript' src='https://localhost/blog/wp-admin/js/user-profile.min.js?ver=5.8.1' id='user-profile-js'></script>
+<script type="text/javascript">
+jQuery( function( $ ) {
+	$( '.hide-if-no-js' ).removeClass( 'hide-if-no-js' );
+} );
+</script>
+</body>
+</html>

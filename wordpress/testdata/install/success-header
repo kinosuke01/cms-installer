@@ -1,0 +1,11 @@
+HTTP/2 200 
+date: Thu, 21 Oct 2021 10:51:40 GMT
+content-type: text/html; charset=utf-8
+content-length: 6555
+server: Apache
+x-powered-by: PHP/7.4.12
+expires: Wed, 11 Jan 1984 05:00:00 GMT
+cache-control: no-cache, must-revalidate, max-age=0
+vary: Range,Accept-Encoding
+accept-ranges: none
+
