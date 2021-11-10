@@ -1,0 +1,33 @@
+@startuml
+title: WordPress installation flow
+
+actor User order 1
+participant "cms-installer" order 2
+participant "hosting-web-server" order 2
+database "hosting-db-server" order 2
+participant "archive-server" order 2
+
+User -> "cms-installer": Command execution
+
+"cms-installer" -> "cms-installer": Generate init.php
+"cms-installer" -> "hosting-web-server": Upload init.php via FTP
+"hosting-web-server" --> "cms-installer": ok
+"cms-installer" -> "hosting-web-server": Access init.php with http(s)
+"hosting-web-server" -> "archive-server": (init.php)Accessing the WordPress zip archive
+"archive-server" --> "hosting-web-server": Send a zip archive
+"hosting-web-server" -> "hosting-web-server": (init.php) Extract zip archive
+"hosting-web-server" --> "cms-installer": ok
+"cms-installer" -> "hosting-web-server": Delete init.php via FTP
+"hosting-web-server" --> "cms-installer": ok
+"cms-installer" -> "hosting-web-server": Run WordPress setup-config (DB connection configuration) via http(s)
+"hosting-web-server" -> "hosting-db-server": (WordPress) Connection check
+"hosting-db-server" --> "hosting-web-server": ok
+"hosting-web-server" --> "cms-installer": ok
+"cms-installer" -> "hosting-web-server": Run the install of WordPress with http(s).
+"hosting-web-server" -> "hosting-db-server": (WordPress) DB initial setup
+"hosting-db-server" --> "hosting-web-server": ok
+"hosting-web-server" --> "cms-installer": ok
+
+"cms-installer" --> "User": Returns the result of the execution
+
+@enduml
