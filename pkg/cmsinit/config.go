@@ -9,7 +9,7 @@ import (
 
 const defaultURL = "https://ja.wordpress.org/latest-ja.zip"
 const defaultDir = "wordpress"
-const defaultPeriod = 60 * 10 // 10min
+const defaultPeriod = 60 // 1min
 
 type Config struct {
 	URL    string
