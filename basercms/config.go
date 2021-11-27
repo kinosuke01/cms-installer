@@ -45,10 +45,6 @@ func (cnf *Config) init() error {
 		cnf.DBPrefix = "mysite_"
 	}
 
-	if cnf.DBPort == "" {
-		cnf.DBPort = "3306"
-	}
-
 	if cnf.InitArchiveURL == "" {
 		cnf.InitArchiveURL = initArchiveURL
 	}
@@ -75,10 +71,7 @@ func (cnf *Config) validate() error {
 		"ftp_login_id":  cnf.FtpLoginID,
 		"ftp_password":  cnf.FtpPassword,
 		"ftp_host":      cnf.FtpHost,
-		"db_name":       cnf.DBName,
-		"db_user":       cnf.DBUser,
-		"db_password":   cnf.DBPassword,
-		"db_host":       cnf.DBHost,
+		"db_type":       cnf.DBType,
 		"site_url":      cnf.SiteURL,
 		"site_user":     cnf.SiteUser,
 		"site_password": cnf.SitePassword,
@@ -90,8 +83,29 @@ func (cnf *Config) validate() error {
 		}
 	}
 
-	k := "site_email"
-	v := cnf.SiteEmail
+	k := "db_type"
+	v := cnf.DBType
+	if !(v == "mysql" || v == "postgres" || v == "sqlite" || v == "csv") {
+		msgs = append(msgs, fmt.Sprintf("%+v is invalid.", k))
+	}
+
+	if cnf.DBType == "mysql" || cnf.DBType == "postgres" {
+		kvs = map[string]string{
+			"db_name":     cnf.DBName,
+			"db_user":     cnf.DBUser,
+			"db_password": cnf.DBPassword,
+			"db_host":     cnf.DBHost,
+			"db_port":     cnf.DBPort,
+		}
+		for k, v := range kvs {
+			if v == "" {
+				msgs = append(msgs, fmt.Sprintf("%+v is required.", k))
+			}
+		}
+	}
+
+	k = "site_email"
+	v = cnf.SiteEmail
 	_, err := mail.ParseAddress(v)
 	if err != nil {
 		msgs = append(msgs, fmt.Sprintf("%+v is invalid format.", k))
