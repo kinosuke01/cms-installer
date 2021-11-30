@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	bci "github.com/kinosuke01/cms-installer/basercms"
 	wpi "github.com/kinosuke01/cms-installer/wordpress"
 )
 
@@ -72,6 +73,8 @@ func main() {
 	switch cms {
 	case "wp", "wordpress":
 		err = wpInstall(paramStr, pp)
+	case "bc", "basercms":
+		err = bcInstall(paramStr, pp)
 	// TODO other cms installation
 	default:
 		err = errors.New("cms name is invalid")
@@ -119,6 +122,40 @@ func wpInstall(paramStr string, pp *PwParams) error {
 	return nil
 }
 
+func bcInstall(paramStr string, pp *PwParams) error {
+	var config bci.Config
+	err := json.Unmarshal([]byte(paramStr), &config)
+	if err != nil {
+		return fmt.Errorf("not json ( %+v )", err.Error())
+	}
+
+	if config.FtpPassword == "" {
+		config.FtpPassword = pp.ftp
+	}
+	if config.DBPassword == "" {
+		config.DBPassword = pp.db
+	}
+	if config.SitePassword == "" {
+		config.SitePassword = pp.site
+	}
+
+	bc, err := bci.New(&config)
+	if err != nil {
+		return err
+	}
+
+	bc.Logger = &Logger{
+		withTS: true,
+	}
+
+	err = bc.Install()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func showUsage() {
 	toText := func(list [][2]string) string {
 		var text string
@@ -141,6 +178,10 @@ func showUsage() {
 	wptext := toText(wpcnf.DescList())
 	text = strings.Replace(text, "WORDPRESS_PLACEHOLDER", wptext, 1)
 
+	bccnf := bci.Config{}
+	bctext := toText(bccnf.DescList())
+	text = strings.Replace(text, "BASERCMS_PLACEHOLDER", bctext, 1)
+
 	fmt.Println(text)
 }
 
@@ -151,4 +192,7 @@ CMS_NAME_PLACEHOLDER
 
 <json_params> (for wordpress):
 WORDPRESS_PLACEHOLDER
+
+<json_params> (for basercms):
+BASERCMS_PLACEHOLDER
 `
