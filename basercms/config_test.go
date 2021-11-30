@@ -67,21 +67,9 @@ func TestConfig_validate(t *testing.T) {
 		},
 		{
 			name: "invalid_email",
-			cnf: &Config{
-				FtpLoginID:   "ftp_user",
-				FtpPassword:  "ftp_password",
-				FtpHost:      "ftp_host",
-				DBType:       "mysql",
-				DBName:       "db_name",
-				DBUser:       "db_user",
-				DBPassword:   "db_password",
-				DBHost:       "db_host",
-				DBPort:       "3306",
-				SiteURL:      "https://example.com/blog",
-				SiteUser:     "site_admin",
-				SitePassword: "site_password",
-				SiteEmail:    "invalid-email-address",
-			},
+			cnf: genValuedConfig(func(cnf *Config) {
+				cnf.SiteEmail = "invalid-email-address"
+			}),
 
 			expectedErrorKeywords: []string{
 				"invalid format",
@@ -90,21 +78,9 @@ func TestConfig_validate(t *testing.T) {
 		},
 		{
 			name: "invalid_url",
-			cnf: &Config{
-				FtpLoginID:   "ftp_user",
-				FtpPassword:  "ftp_password",
-				FtpHost:      "ftp_host",
-				DBType:       "mysql",
-				DBName:       "db_name",
-				DBUser:       "db_user",
-				DBPassword:   "db_password",
-				DBHost:       "db_host",
-				DBPort:       "3306",
-				SiteURL:      "invaid-site-url",
-				SiteUser:     "site_admin",
-				SitePassword: "site_password",
-				SiteEmail:    "site-admin@example.com",
-			},
+			cnf: genValuedConfig(func(cnf *Config) {
+				cnf.SiteURL = "invalid-site-url"
+			}),
 
 			expectedErrorKeywords: []string{
 				"invalid format",
@@ -112,45 +88,51 @@ func TestConfig_validate(t *testing.T) {
 			},
 		},
 		{
-			name: "valid_config_when_using_mysql",
-			// cnf: genValuedConfig(func(cnf) {
-			//
-			// }),
-			cnf: &Config{
-				FtpLoginID:   "ftp_user",
-				FtpPassword:  "ftp_password",
-				FtpHost:      "ftp_host",
-				DBType:       "mysql",
-				DBName:       "db_name",
-				DBUser:       "db_user",
-				DBPassword:   "db_password",
-				DBHost:       "db_host",
-				DBPort:       "3306",
-				SiteURL:      "https://example.com/blog",
-				SiteUser:     "site_admin",
-				SitePassword: "site_password",
-				SiteEmail:    "site-admin@example.com",
+			name: "invalid_db_type",
+			cnf: genValuedConfig(func(cnf *Config) {
+				cnf.DBType = "invalid-db-type"
+			}),
+
+			expectedErrorKeywords: []string{
+				"invalid format",
+				"db_type",
 			},
+		},
+		{
+			name: "empty-mysql-info",
+			cnf: genValuedConfig(func(cnf *Config) {
+				cnf.DBType = "mysql"
+				cnf.DBHost = ""
+				cnf.DBPort = ""
+				cnf.DBName = ""
+				cnf.DBUser = ""
+				cnf.DBPassword = ""
+			}),
+			expectedErrorKeywords: []string{
+				"required",
+				"db_host",
+				"db_port",
+				"db_name",
+				"db_user",
+				"db_password",
+			},
+		},
+		{
+			name: "valid_config_when_using_mysql",
+			cnf:  genValuedConfig(func(cnf *Config) {}),
 
 			expectedErrorKeywords: []string{},
 		},
 		{
-			name: "valid_config_when_using_mysql",
-			cnf: &Config{
-				FtpLoginID:   "ftp_user",
-				FtpPassword:  "ftp_password",
-				FtpHost:      "ftp_host",
-				DBType:       "mysql",
-				DBName:       "db_name",
-				DBUser:       "db_user",
-				DBPassword:   "db_password",
-				DBHost:       "db_host",
-				DBPort:       "3306",
-				SiteURL:      "https://example.com/blog",
-				SiteUser:     "site_admin",
-				SitePassword: "site_password",
-				SiteEmail:    "site-admin@example.com",
-			},
+			name: "valid_config_when_using_sqlite",
+			cnf: genValuedConfig(func(cnf *Config) {
+				cnf.DBType = "sqlite"
+				cnf.DBHost = ""
+				cnf.DBPort = ""
+				cnf.DBName = ""
+				cnf.DBUser = ""
+				cnf.DBPassword = ""
+			}),
 
 			expectedErrorKeywords: []string{},
 		},

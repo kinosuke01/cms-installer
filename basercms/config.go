@@ -86,7 +86,7 @@ func (cnf *Config) validate() error {
 	k := "db_type"
 	v := cnf.DBType
 	if !(v == "mysql" || v == "postgres" || v == "sqlite" || v == "csv") {
-		msgs = append(msgs, fmt.Sprintf("%+v is invalid.", k))
+		msgs = append(msgs, fmt.Sprintf("%+v is invalid format.", k))
 	}
 
 	if cnf.DBType == "mysql" || cnf.DBType == "postgres" {
