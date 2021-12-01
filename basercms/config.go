@@ -67,6 +67,7 @@ func (cnf *Config) init() error {
 func (cnf *Config) validate() error {
 	msgs := []string{}
 
+	// required
 	kvs := map[string]string{
 		"ftp_login_id":  cnf.FtpLoginID,
 		"ftp_password":  cnf.FtpPassword,
@@ -83,6 +84,7 @@ func (cnf *Config) validate() error {
 		}
 	}
 
+	// db_type format
 	k := "db_type"
 	v := cnf.DBType
 	if v != "" {
@@ -91,6 +93,7 @@ func (cnf *Config) validate() error {
 		}
 	}
 
+	// required when using mysql or postrgres
 	if cnf.DBType == "mysql" || cnf.DBType == "postgres" {
 		kvs = map[string]string{
 			"db_name":     cnf.DBName,
@@ -106,6 +109,7 @@ func (cnf *Config) validate() error {
 		}
 	}
 
+	// email address format
 	k = "site_email"
 	v = cnf.SiteEmail
 	_, err := mail.ParseAddress(v)
@@ -113,6 +117,7 @@ func (cnf *Config) validate() error {
 		msgs = append(msgs, fmt.Sprintf("%+v is invalid format.", k))
 	}
 
+	// url format
 	kvs = map[string]string{
 		"site_url":    cnf.SiteURL,
 		"archive_url": cnf.InitArchiveURL,
