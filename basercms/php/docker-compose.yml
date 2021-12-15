@@ -1,0 +1,13 @@
+services:
+  bc_web:
+    image: baserproject/basercms:latest
+    ports:
+      - "80:80"
+    volumes:
+      - .:/app/
+  bc_mysql:
+    image: mysql:5.7
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
