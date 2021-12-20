@@ -51,6 +51,48 @@ $funcs = array(
         }
         return $errs;
     },
+    'build_cmd' => function($desc) {
+        $errs = array();
+        $tt = array(
+            array(
+                'case' => 'empty',
+                'php_path' => '/usr/local/bin/php',
+                'args' => [
+                    'siteurl' => '',
+                    'dbtype' => '',
+                    'username' => '',
+                    'password' => '',    
+                ],
+                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install '' '' '' ''",
+            ),
+            /*
+            array(
+                'case' => 'required_only',
+                'php_path' => '/usr/local/bin/php',
+                'expired_at' => '1634292000', // '2021-10-15T19:00:00+09:00
+                'token' => '12345',
+                'now' => '1634288400',
+                'expected_result' => false,
+            ),
+            array(
+                'case' => 'with_options',
+                'php_path' => '/usr/local/bin/php',
+                'expired_at' => '1634292000',
+                'token' => 'abcde',
+                'now' => '1634292000',
+                'expected_result' => false,
+            ),
+            */
+        );
+        foreach ($tt as $tc) {
+            $result = build_cmd($tc['args'], ['php_path' => $tc['php_path']]);
+
+            if ($tc['expected_result'] !== $result) {
+                $errs[] = errf(__LINE__, $desc, $tc['case'], 'error', $tc['expected_result'], $result);
+            }
+        }
+        return $errs;
+    },
 );
 
 $errs = array();
