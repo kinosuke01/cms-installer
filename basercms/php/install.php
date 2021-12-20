@@ -1,7 +1,29 @@
 <?php
+const TOKEN      = 'TOKEN_PLACEHOLDER';
+const EXPIRED_AT = 'EXPIRED_AT_PLACEHOLDER';
+const PHP_PATH   = 'PHP_PATH_PLACEHOLDER';
+
 ini_set('display_errors', "Off");
 
-function build_cmd($params = array()) {
+function validate_token($token, $now = null)
+{
+	$correctToken = TOKEN;
+	$expiredAt = EXPIRED_AT;
+
+	if (!$now) {
+	  $now = strtotime('now');
+	}
+  if ($correctToken !== $token) {
+    return false;
+  }
+  if ((int)$expiredAt <= (int)$now) {
+    return false;
+  }
+	return true;
+}
+
+function build_cmd($params = array())
+{
   $phpPath = "php";
   $cake    = getcwd() . '/app/Console/cake.php';
 
@@ -26,14 +48,26 @@ function build_cmd($params = array()) {
   return $cmd;
 }
 
-$cmd = build_cmd($_POST);
-$output = [];
-$exit = 0;
-if (!exec($cmd, $output, $exit)) {
-  $output[] = 'unknown_error';
+function main()
+{
+  if (!validate_token($_POST['token'])) {
+    // TODO
+    return;
+  }
+
+  $cmd = build_cmd($_POST);
+  $output = [];
+  $exit = 0;
+  if (!exec($cmd, $output, $exit)) {
+    $output[] = 'UNKNOWN_ERROR';
+  }
+  $res = [
+    'exit_code' => $exit,
+    'messages' => $output,
+  ];
+  echo json_encode($res, JSON_UNESCAPED_UNICODE);
 }
-$res = [
-  'exit_code' => $exit,
-  'messages' => $output,
-];
-echo json_encode($res, JSON_UNESCAPED_UNICODE);
+
+if (isset($_POST['token'])) {
+	main();
+}
