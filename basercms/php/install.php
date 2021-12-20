@@ -48,10 +48,19 @@ function build_cmd($params = array())
   return $cmd;
 }
 
+function res($exitCode = 0, $messages = array())
+{
+  $res = [
+    'exit_code' => $exitCode,
+    'messages' => $messages,
+  ];
+  return json_encode($res, JSON_UNESCAPED_UNICODE);
+}
+
 function main()
 {
   if (!validate_token($_POST['token'])) {
-    // TODO
+    echo res(1, ['AUTH_ERROR']);
     return;
   }
 
@@ -59,13 +68,9 @@ function main()
   $output = [];
   $exit = 0;
   if (!exec($cmd, $output, $exit)) {
-    $output[] = 'UNKNOWN_ERROR';
+    $output[] = 'EXEC_ERROR';
   }
-  $res = [
-    'exit_code' => $exit,
-    'messages' => $output,
-  ];
-  echo json_encode($res, JSON_UNESCAPED_UNICODE);
+  echo res($exit, $output);
 }
 
 if (isset($_POST['token'])) {
