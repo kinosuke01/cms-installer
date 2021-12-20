@@ -5,14 +5,12 @@ const PHP_PATH   = 'PHP_PATH_PLACEHOLDER';
 
 ini_set('display_errors', "Off");
 
-function validate_token($token, $now = null)
+function validate_token($token, $opts = [])
 {
-	$correctToken = TOKEN;
-	$expiredAt = EXPIRED_AT;
+	$correctToken = isset($opts['token']) ? $opts['token'] : TOKEN;
+	$expiredAt = isset($opts['expired_at']) ? $opts['expired_at'] : EXPIRED_AT;
+  $now = isset($opts['now']) ? $opts['now'] : strtotime('now');
 
-	if (!$now) {
-	  $now = strtotime('now');
-	}
   if ($correctToken !== $token) {
     return false;
   }
@@ -22,9 +20,9 @@ function validate_token($token, $now = null)
 	return true;
 }
 
-function build_cmd($params = array())
+function build_cmd($params = [], $opts = [])
 {
-  $phpPath = "php";
+  $phpPath = isset($opts['php_path']) ? $opts['php_path'] : PHP_PATH;
   $cake    = getcwd() . '/app/Console/cake.php';
 
   $cmds = ["$phpPath -q $cake bc_manager install"];
