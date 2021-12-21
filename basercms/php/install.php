@@ -23,17 +23,17 @@ function validate_token($token, $opts = [])
 function build_cmd($params = [], $opts = [])
 {
   $phpPath = isset($opts['php_path']) ? $opts['php_path'] : PHP_PATH;
-  $cake    = getcwd() . '/app/Console/cake.php';
+  $cake    = __DIR__ . '/app/Console/cake.php';
 
   $cmds = ["$phpPath -q $cake bc_manager install"];
 
-  $reqKeys = ['siteurl', 'dbtype', 'username', 'password'];
+  $reqKeys = ['siteurl', 'dbtype', 'siteuser', 'sitepassword'];
   foreach($reqKeys as $key) {
     $val = isset($params[$key]) ? $params[$key] : '';
     $cmds[] = escapeshellarg($val);
   }
 
-  $optKeys = ['host', 'database', 'login', 'password', 'dbpassword', 'prefix', 'port', 'portnumber', 'baseurl', 'data'];
+  $optKeys = ['host', 'database', 'login', 'password', 'prefix', 'port', 'baseurl', 'data'];
   foreach($optKeys as $key) {
     if (isset($params[$key])) {
       $cmds[] = '--' . $key . ' ' . escapeshellarg($params[$key]);
