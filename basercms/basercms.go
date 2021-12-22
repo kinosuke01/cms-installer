@@ -11,6 +11,7 @@ import (
 	"github.com/kinosuke01/cms-installer/pkg/cmsinit"
 	"github.com/kinosuke01/cms-installer/pkg/ftpc"
 	"github.com/kinosuke01/cms-installer/pkg/httpc"
+	"github.com/kinosuke01/cms-installer/pkg/randstr"
 	"github.com/kinosuke01/cms-installer/pkg/withlog"
 )
 
@@ -51,6 +52,9 @@ type BaserCMS struct {
 	initArchiveURL string
 	initArchiveDir string
 
+	bcInstallScript string
+	bcInstallToken  string
+
 	Logger Logger
 }
 
@@ -82,6 +86,11 @@ func New(cnf *Config) (*BaserCMS, error) {
 		BasePath: baseURL.Path,
 	})
 
+	bcInstallToken, err := randstr.Generate(64)
+	if err != nil {
+		return nil, err
+	}
+
 	return &BaserCMS{
 		ftpc:  fc,
 		httpc: hc,
@@ -104,6 +113,9 @@ func New(cnf *Config) (*BaserCMS, error) {
 		initToken:      cnf.InitToken,
 		initArchiveURL: cnf.InitArchiveURL,
 		initArchiveDir: cnf.InitArchiveDir,
+
+		bcInstallScript: bcInstallScript,
+		bcInstallToken:  bcInstallToken,
 	}, nil
 }
 
@@ -164,6 +176,31 @@ func (cms *BaserCMS) ExecInit() error {
 }
 
 func (cms *BaserCMS) DeleteInitScript() error {
+	filePath := path.Join(cms.ftpDir, cms.initScript)
+
+	err := cms.ftpc.Delete(filePath, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cms *BaserCMS) InjectBcInstallScript() error {
+	pContent, err := cms.BcInstallScript()
+	if err != nil {
+		return err
+	}
+	filePath := path.Join(cms.ftpDir, cms.initScript)
+
+	err = cms.ftpc.Upload(filePath, pContent)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (cms *BaserCMS) DeleteBcInstallScript() error {
 	filePath := path.Join(cms.ftpDir, cms.initScript)
 
 	err := cms.ftpc.Delete(filePath, false)

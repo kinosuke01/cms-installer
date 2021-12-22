@@ -4,5 +4,7 @@ const initArchiveURL string = "https://basercms.net/packages/download_exec/baser
 const initArchiveDir string = "basercms"
 const initScript string = "init.php"
 
+const bcInstallScript string = "install.php"
+
 const bcHttpTimeout int = 5
 const initHttpTimeout int = 15
