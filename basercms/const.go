@@ -6,5 +6,5 @@ const initScript string = "init.php"
 
 const bcInstallScript string = "install.php"
 
-const bcHttpTimeout int = 5
+const bcHttpTimeout int = 15
 const initHttpTimeout int = 15

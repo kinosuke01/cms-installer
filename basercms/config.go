@@ -34,6 +34,8 @@ type Config struct {
 	InitArchiveURL string `json:"init_archive_url"`
 	InitArchiveDir string `json:"init_archive_dir"`
 	InitToken      string `json:"init_token"`
+
+	PHPPath string `json:"php_path" desc:"[optional] php command path (default=php)"`
 }
 
 func (cnf *Config) init() error {
@@ -59,6 +61,10 @@ func (cnf *Config) init() error {
 			return err
 		}
 		cnf.InitToken = token
+	}
+
+	if cnf.PHPPath == "" {
+		cnf.PHPPath = "php"
 	}
 
 	return nil

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kinosuke01/cms-installer/pkg/cmsinit"
@@ -52,8 +54,9 @@ type BaserCMS struct {
 	initArchiveURL string
 	initArchiveDir string
 
-	bcInstallScript string
-	bcInstallToken  string
+	bcInstallScript  string
+	bcInstallToken   string
+	bcInstallPHPPath string
 
 	Logger Logger
 }
@@ -114,8 +117,9 @@ func New(cnf *Config) (*BaserCMS, error) {
 		initArchiveURL: cnf.InitArchiveURL,
 		initArchiveDir: cnf.InitArchiveDir,
 
-		bcInstallScript: bcInstallScript,
-		bcInstallToken:  bcInstallToken,
+		bcInstallScript:  bcInstallScript,
+		bcInstallToken:   bcInstallToken,
+		bcInstallPHPPath: cnf.PHPPath,
 	}, nil
 }
 
@@ -186,12 +190,24 @@ func (cms *BaserCMS) DeleteInitScript() error {
 	return nil
 }
 
+func (cms *BaserCMS) BcInstallScript(now time.Time) (*string, error) {
+	str := php
+	str = strings.Replace(str, "TOKEN_PLACEHOLDER", cms.bcInstallToken, 1)
+	str = strings.Replace(str, "PHP_PATH_PLACEHOLDER", cms.bcInstallPHPPath, 1)
+
+	t := now.Add(time.Duration(60) * time.Second).Local()
+	timestr := strconv.FormatInt(t.Unix(), 10)
+	str = strings.Replace(str, "EXPIRED_AT_PLACEHOLDER", timestr, 1)
+
+	return &str, nil
+}
+
 func (cms *BaserCMS) InjectBcInstallScript() error {
-	pContent, err := cms.BcInstallScript()
+	pContent, err := cms.BcInstallScript(time.Now().Local())
 	if err != nil {
 		return err
 	}
-	filePath := path.Join(cms.ftpDir, cms.initScript)
+	filePath := path.Join(cms.ftpDir, cms.bcInstallScript)
 
 	err = cms.ftpc.Upload(filePath, pContent)
 	if err != nil {
@@ -201,7 +217,7 @@ func (cms *BaserCMS) InjectBcInstallScript() error {
 }
 
 func (cms *BaserCMS) DeleteBcInstallScript() error {
-	filePath := path.Join(cms.ftpDir, cms.initScript)
+	filePath := path.Join(cms.ftpDir, cms.bcInstallScript)
 
 	err := cms.ftpc.Delete(filePath, false)
 	if err != nil {
