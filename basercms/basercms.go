@@ -241,6 +241,7 @@ func (cms *BaserCMS) BcIntall() error {
 				"dbtype":       []string{cms.dbType},
 				"siteuser":     []string{cms.siteUser},
 				"sitepassword": []string{cms.sitePassword},
+				"email":        []string{cms.siteEmail},
 				"host":         []string{cms.dbHost},
 				"database":     []string{cms.dbName},
 				"login":        []string{cms.dbUser},

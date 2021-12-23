@@ -1,26 +1,8 @@
 package basercms
 
 import (
-	"fmt"
-	"strings"
 	"testing"
 )
-
-func testError(err error, errorKeywords *[]string) string {
-	exists := (err != nil)
-	expectedExists := (len(*errorKeywords) > 0)
-	if expectedExists != exists {
-		return fmt.Sprintf("error exists wrong. want=%+v, got=%+v", expectedExists, exists)
-	}
-	if err != nil {
-		for _, keyword := range *errorKeywords {
-			if !strings.Contains(err.Error(), keyword) {
-				return fmt.Sprintf("error messages wrong. want_keywords=%+v, got=%+v", keyword, err.Error())
-			}
-		}
-	}
-	return ""
-}
 
 func TestConfig_validate(t *testing.T) {
 	genValuedConfig := func(f func(cnf *Config)) *Config {
