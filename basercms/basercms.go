@@ -2,6 +2,7 @@ package basercms
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -37,6 +38,7 @@ type BaserCMS struct {
 
 	ftpDir string
 
+	dbType     string
 	dbName     string
 	dbUser     string
 	dbPassword string
@@ -100,6 +102,7 @@ func New(cnf *Config) (*BaserCMS, error) {
 
 		ftpDir: cnf.FtpDir,
 
+		dbType:     cnf.DBType,
 		dbName:     cnf.DBName,
 		dbUser:     cnf.DBUser,
 		dbPassword: cnf.DBPassword,
@@ -216,6 +219,78 @@ func (cms *BaserCMS) InjectBcInstallScript() error {
 	return nil
 }
 
+func (cms *BaserCMS) BcIntall() error {
+	ctx, cancel := cms.httpContext(bcHttpTimeout)
+	defer cancel()
+
+	parsedURL, err := url.Parse(cms.siteURL)
+	if err != nil {
+		return err
+	}
+	siteURL := parsedURL.Scheme + "://" + parsedURL.Host
+	baseURL := parsedURL.Path
+
+	res, err := cms.httpc.DoRequest(
+		ctx,
+		&httpc.RequestOptions{
+			Path:   cms.bcInstallScript,
+			Method: http.MethodPost,
+			BodyValues: url.Values{
+				"token":        []string{cms.bcInstallToken},
+				"siteurl":      []string{siteURL},
+				"dbtype":       []string{cms.dbType},
+				"siteuser":     []string{cms.siteUser},
+				"sitepassword": []string{cms.sitePassword},
+				"host":         []string{cms.dbHost},
+				"database":     []string{cms.dbName},
+				"login":        []string{cms.dbUser},
+				"password":     []string{cms.dbPassword},
+				"prefix":       []string{cms.dbPrefix},
+				"port":         []string{cms.dbPort},
+				"baseurl":      []string{baseURL},
+			},
+		},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != 200 {
+		return fmt.Errorf("status code is %+v", res.StatusCode)
+	}
+
+	bodyData := struct {
+		ExitCode string   `json:"exit_code"`
+		Messages []string `json:"messages"`
+	}{}
+	err = json.Unmarshal(res.BodyBytes, &bodyData)
+
+	if err != nil {
+		return err
+	}
+
+	exitCode := bodyData.ExitCode
+	msgLine := strings.Join(bodyData.Messages, "\t")
+
+	if exitCode != "0" {
+		return fmt.Errorf("exit_code is %+v, messages is %+v", bodyData.ExitCode, msgLine)
+	}
+
+	failedKeywords := []string{
+		"既にインストール済です",
+		"baserCMSのインストールを行うには",
+		"baserCMSのインストールに失敗しました",
+	}
+	for _, keyword := range failedKeywords {
+		if !strings.Contains(msgLine, keyword) {
+			return fmt.Errorf("messages is %+v", msgLine)
+		}
+	}
+
+	return nil
+}
+
 func (cms *BaserCMS) DeleteBcInstallScript() error {
 	filePath := path.Join(cms.ftpDir, cms.bcInstallScript)
 
@@ -245,6 +320,21 @@ func (cms *BaserCMS) Install() error {
 	}
 
 	err = withlog.Exec(cms.DeleteInitScript, desc("DeleteInitScript"), cms.Logger)
+	if err != nil {
+		return err
+	}
+
+	err = withlog.Exec(cms.InjectBcInstallScript, desc("InjectBcInstallScript"), cms.Logger)
+	if err != nil {
+		return err
+	}
+
+	err = withlog.Exec(cms.BcIntall, desc("BcInstall"), cms.Logger)
+	if err != nil {
+		return err
+	}
+
+	err = withlog.Exec(cms.DeleteBcInstallScript, desc("DeleteBcInstallScript"), cms.Logger)
 	if err != nil {
 		return err
 	}

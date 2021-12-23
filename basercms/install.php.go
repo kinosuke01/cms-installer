@@ -38,7 +38,7 @@ function build_cmd($params = [], $opts = [])
 
   $optKeys = ['host', 'database', 'login', 'password', 'prefix', 'port', 'baseurl', 'data'];
   foreach($optKeys as $key) {
-    if (isset($params[$key])) {
+    if (isset($params[$key]) && $params[$key]) {
       $cmds[] = '--' . $key . ' ' . escapeshellarg($params[$key]);
     }
   }
