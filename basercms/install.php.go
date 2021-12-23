@@ -1,7 +1,7 @@
 package basercms
 
 // TODO sync with install.php
-const php string = `<?php
+const bcInstallScriptTemplate string = `<?php
 const TOKEN      = 'TOKEN_PLACEHOLDER';
 const EXPIRED_AT = 'EXPIRED_AT_PLACEHOLDER';
 const PHP_PATH   = 'PHP_PATH_PLACEHOLDER';

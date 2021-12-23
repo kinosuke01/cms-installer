@@ -194,7 +194,7 @@ func (cms *BaserCMS) DeleteInitScript() error {
 }
 
 func (cms *BaserCMS) BcInstallScript(now time.Time) (*string, error) {
-	str := php
+	str := bcInstallScriptTemplate
 	str = strings.Replace(str, "TOKEN_PLACEHOLDER", cms.bcInstallToken, 1)
 	str = strings.Replace(str, "PHP_PATH_PLACEHOLDER", cms.bcInstallPHPPath, 1)
 
