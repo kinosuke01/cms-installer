@@ -278,6 +278,8 @@ func (cms *BaserCMS) BcIntall() error {
 	}
 
 	failedKeywords := []string{
+		"AUTH_ERROR",
+		"EXEC_ERROR",
 		"既にインストール済です",
 		"baserCMSのインストールを行うには",
 		"baserCMSのインストールに失敗しました",
