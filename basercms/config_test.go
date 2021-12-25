@@ -2,6 +2,8 @@ package basercms
 
 import (
 	"testing"
+
+	"github.com/kinosuke01/cms-installer/pkg/thelper"
 )
 
 func TestConfig_validate(t *testing.T) {
@@ -124,7 +126,7 @@ func TestConfig_validate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.cnf.validate()
 
-			msg := testError(err, &tc.expectedErrorKeywords)
+			msg := thelper.CheckInclusion(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
