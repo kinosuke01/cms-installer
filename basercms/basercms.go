@@ -223,7 +223,7 @@ func (cms *BaserCMS) InjectBcInstallScript() error {
 	return nil
 }
 
-func (cms *BaserCMS) BcIntall() error {
+func (cms *BaserCMS) BcInstall() error {
 	ctx, cancel := cms.httpContext(httpTimeout)
 	defer cancel()
 
@@ -336,7 +336,7 @@ func (cms *BaserCMS) Install() error {
 		return err
 	}
 
-	err = withlog.Exec(cms.BcIntall, desc("BcInstall"), cms.Logger)
+	err = withlog.Exec(cms.BcInstall, desc("BcInstall"), cms.Logger)
 	if err != nil {
 		return err
 	}

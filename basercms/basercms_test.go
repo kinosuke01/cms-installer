@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kinosuke01/cms-installer/pkg/httpc"
 	"github.com/kinosuke01/cms-installer/pkg/thelper"
 )
 
@@ -201,8 +202,7 @@ func TestBaserCMS_BcInstallScript(t *testing.T) {
 	}
 }
 
-/*
-func TestWordpress_WpAdminInstall(t *testing.T) {
+func TestBaserCMS_BcInstall(t *testing.T) {
 	tt := []struct {
 		name             string
 		statusCode       int
@@ -223,40 +223,41 @@ func TestWordpress_WpAdminInstall(t *testing.T) {
 
 			expectedErrorKeywords: []string{"status code is 500"},
 		},
-		{
-			name:             "validation_error",
-			statusCode:       200,
-			responseBodyFile: "testdata/install/empty-error-body",
+		/*
+			{
+				name:             "validation_error",
+				statusCode:       200,
+				responseBodyFile: "testdata/install/empty-error-body",
 
-			expectedErrorKeywords: []string{
-				"invalid post parameter",
+				expectedErrorKeywords: []string{
+					"invalid post parameter",
+				},
 			},
-		},
-		{
-			name:             "status_code_200",
-			statusCode:       200,
-			responseBodyFile: "testdata/install/success-body",
+			{
+				name:             "status_code_200",
+				statusCode:       200,
+				responseBodyFile: "testdata/install/success-body",
 
-			expectedErrorKeywords: []string{},
-		},
+				expectedErrorKeywords: []string{},
+			},
+		*/
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			httpClient := &TestHttpClient{
-				statusCode:       tc.statusCode,
-				errorMessage:     tc.errorMessage,
-				responseBodyFile: tc.responseBodyFile,
+			httpClient := &httpc.MockClient{
+				StatusCode:       tc.statusCode,
+				ErrorMessage:     tc.errorMessage,
+				ResponseBodyFile: tc.responseBodyFile,
 			}
-			cms := &WordPress{
+			cms := &BaserCMS{
 				httpc: httpClient,
 			}
-			err := cms.WpAdminInstall()
-			msg := testError(err, &tc.expectedErrorKeywords)
+			err := cms.BcInstall()
+			msg := thelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
 		})
 	}
 }
-*/
