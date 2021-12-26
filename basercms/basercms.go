@@ -91,7 +91,12 @@ func New(cnf *Config) (*BaserCMS, error) {
 		BasePath: baseURL.Path,
 	})
 
-	bcInstallToken, err := randstr.Generate(64)
+	initToken, err := randstr.Generate(tokenLen)
+	if err != nil {
+		return nil, err
+	}
+
+	bcInstallToken, err := randstr.Generate(tokenLen)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +121,7 @@ func New(cnf *Config) (*BaserCMS, error) {
 		siteEmail:    cnf.SiteEmail,
 
 		initScript:     initScript,
-		initToken:      cnf.InitToken,
+		initToken:      initToken,
 		initArchiveURL: cnf.InitArchiveURL,
 		initArchiveDir: cnf.InitArchiveDir,
 
@@ -147,7 +152,6 @@ func (cms *BaserCMS) InjectInitScript() error {
 	}
 	filePath := path.Join(cms.ftpDir, cms.initScript)
 
-	// TODO Add injection methods other than FTP.
 	err = cms.ftpc.Upload(filePath, pContent)
 	if err != nil {
 		return err
@@ -156,7 +160,7 @@ func (cms *BaserCMS) InjectInitScript() error {
 }
 
 func (cms *BaserCMS) ExecInit() error {
-	ctx, cancel := cms.httpContext(initHttpTimeout)
+	ctx, cancel := cms.httpContext(httpTimeout)
 	defer cancel()
 
 	res, err := cms.httpc.DoRequest(
@@ -220,7 +224,7 @@ func (cms *BaserCMS) InjectBcInstallScript() error {
 }
 
 func (cms *BaserCMS) BcIntall() error {
-	ctx, cancel := cms.httpContext(bcHttpTimeout)
+	ctx, cancel := cms.httpContext(httpTimeout)
 	defer cancel()
 
 	parsedURL, err := url.Parse(cms.siteURL)

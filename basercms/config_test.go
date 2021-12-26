@@ -126,7 +126,7 @@ func TestConfig_validate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.cnf.validate()
 
-			msg := thelper.CheckInclusion(err, &tc.expectedErrorKeywords)
+			msg := thelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}

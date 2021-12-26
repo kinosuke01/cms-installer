@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func CheckInclusion(err error, keywords *[]string) string {
+func CheckError(err error, keywords *[]string) string {
 	exists := (err != nil)
 	expectedExists := (len(*keywords) > 0)
 	if expectedExists && !exists {

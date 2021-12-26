@@ -2,12 +2,35 @@ package basercms
 
 import (
 	"reflect"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/kinosuke01/cms-installer/pkg/thelper"
 )
 
 func TestNew(t *testing.T) {
+	genValuedConfig := func(f func(cnf *Config)) *Config {
+		cnf := &Config{
+			FtpLoginID:     "ftp_user",
+			FtpPassword:    "ftp_password",
+			FtpHost:        "ftp_host",
+			FtpDir:         "mysite",
+			DBType:         "mysql",
+			DBName:         "db_name",
+			DBUser:         "db_user",
+			DBPassword:     "db_password",
+			DBHost:         "db_host",
+			SiteURL:        "https://example.com/mysite",
+			SiteUser:       "site_admin",
+			SitePassword:   "site_password",
+			SiteEmail:      "site-admin@example.com",
+			InitArchiveURL: "https://basercms.net/packages/download_exec/basercms-x.x.x.zip",
+		}
+		f(cnf)
+		return cnf
+	}
+
 	tt := []struct {
 		name string
 		cnf  *Config
@@ -22,62 +45,60 @@ func TestNew(t *testing.T) {
 		expectedDbUser     string
 		expectedDbPassword string
 		expectedDbHost     string
+		expectedDbPort     string
 		expectedDbPrefix   string
 
-		expectedSiteTitle    string
 		expectedSiteUser     string
 		expectedSitePassword string
 		expectedSiteEmail    string
 
-		expectedInitScript string
-		expectedArchiveURL string
+		expectedInitScript     string
+		expectedInitTokenLen   int
+		expectedInitArchiveURL string
+		expectedInitArchiveDir string
 
-		expectedErrorExists   bool
+		expectedBcInstallScript   string
+		expectedBcInstallTokenLen int
+		expectedBcInstallPHPPath  string
+
 		expectedErrorKeywords []string
 	}{
 		{
 			name: "invalid_config",
 			cnf:  &Config{},
 
-			expectedErrorExists: true,
 			expectedErrorKeywords: []string{
 				"required",
 			},
 		},
 		{
 			name: "valid_config",
-			cnf: &Config{
-				FtpLoginID:   "ftpuser",
-				FtpPassword:  "ftppassword",
-				FtpHost:      "ftp.example.com",
-				FtpDir:       "example.com/blog",
-				DBType:       "mysql",
-				DBName:       "site_production",
-				DBUser:       "dbuser",
-				DBPassword:   "dbpassword",
-				DBHost:       "db.example.com",
-				DBPrefix:     "mysite_",
-				SiteURL:      "https://example.com/blog",
-				SiteUser:     "siteadmin",
-				SitePassword: "sitepassword",
-				SiteEmail:    "site@example.com",
-			},
+			cnf:  genValuedConfig(func(cnf *Config) {}),
 
 			expectedFtpcType:     "*ftpc.Client",
 			expectedHttpcType:    "*httpc.Client",
-			expectedFtpDir:       "example.com/blog",
+			expectedFtpDir:       "mysite",
 			expectedDbType:       "mysql",
-			expectedDbName:       "site_production",
-			expectedDbUser:       "dbuser",
-			expectedDbPassword:   "dbpassword",
-			expectedDbHost:       "db.example.com",
+			expectedDbName:       "db_name",
+			expectedDbUser:       "db_user",
+			expectedDbPassword:   "db_password",
+			expectedDbHost:       "db_host",
+			expectedDbPort:       "3306",
 			expectedDbPrefix:     "mysite_",
-			expectedSiteTitle:    "MyBlog",
-			expectedSiteUser:     "siteadmin",
-			expectedSitePassword: "sitepassword",
-			expectedSiteEmail:    "site@example.com",
-			expectedInitScript:   "init.php",
-			expectedArchiveURL:   "https://ja.wordpress.org/latest-ja.zip",
+			expectedSiteUser:     "site_admin",
+			expectedSitePassword: "site_password",
+			expectedSiteEmail:    "site-admin@example.com",
+
+			expectedInitScript:     initScript,
+			expectedInitTokenLen:   tokenLen,
+			expectedInitArchiveURL: "https://basercms.net/packages/download_exec/basercms-x.x.x.zip",
+			expectedInitArchiveDir: initArchiveDir,
+
+			expectedBcInstallScript:   bcInstallScript,
+			expectedBcInstallTokenLen: tokenLen,
+			expectedBcInstallPHPPath:  "php",
+
+			expectedErrorKeywords: []string{},
 		},
 	}
 
@@ -85,7 +106,7 @@ func TestNew(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cms, err := New(tc.cnf)
 
-			msg := thelper.CheckInclusion(err, &tc.expectedErrorKeywords)
+			msg := thelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
@@ -97,251 +118,90 @@ func TestNew(t *testing.T) {
 				{"ftpcType", tc.expectedFtpcType, reflect.TypeOf(cms.ftpc).String()},
 				{"httpcType", tc.expectedHttpcType, reflect.TypeOf(cms.httpc).String()},
 				{"ftpDir", tc.expectedFtpDir, cms.ftpDir},
+				{"dbType", tc.expectedDbType, cms.dbType},
 				{"dbName", tc.expectedDbName, cms.dbName},
 				{"dbUser", tc.expectedDbUser, cms.dbUser},
 				{"dbPassword", tc.expectedDbPassword, cms.dbPassword},
 				{"dbHost", tc.expectedDbHost, cms.dbHost},
+				{"dbPort", tc.expectedDbPort, cms.dbPort},
 				{"dbPrefix", tc.expectedDbPrefix, cms.dbPrefix},
 				{"siteUser", tc.expectedSiteUser, cms.siteUser},
 				{"sitePassword", tc.expectedSitePassword, cms.sitePassword},
 				{"siteEmail", tc.expectedSiteEmail, cms.siteEmail},
 				{"initScript", tc.expectedInitScript, cms.initScript},
-				{"archiveURL", tc.expectedArchiveURL, cms.initArchiveURL},
+				{"initArchiveURL", tc.expectedInitArchiveURL, cms.initArchiveURL},
+				{"bcInstallScript", tc.expectedBcInstallScript, cms.bcInstallScript},
+				{"bcInstallPHPPath", tc.expectedBcInstallPHPPath, cms.bcInstallPHPPath},
 			}
 			for _, kvv := range kvvs {
 				if kvv[1] != kvv[2] {
 					t.Fatalf("%+v wrong. want=%+v, got=%+v", kvv[0], kvv[1], kvv[2])
 				}
 			}
+
+			if tc.expectedInitTokenLen != len(cms.initToken) {
+				t.Fatalf("initTokenLength wrong. want=%+v, got=%+v", tc.expectedInitTokenLen, len(cms.initToken))
+			}
+			if tc.expectedBcInstallTokenLen != len(cms.bcInstallToken) {
+				t.Fatalf("bcInstallTokenLength wrong. want=%+v, got=%+v", tc.expectedBcInstallTokenLen, len(cms.bcInstallToken))
+			}
 		})
 	}
 }
 
-func TestWordpress_InjectInitScript(t *testing.T) {
+func TestBaserCMS_BcInstallScript(t *testing.T) {
 	tt := []struct {
-		name string
+		name    string
+		token   string
+		phpPath string
+		now     string
 
-		ftpDir       string
-		initScript   string
-		initToken    string
-		errorMessage string
-
-		expectedFilePath      string
-		expectedErrorKeywords []string
+		expectedToken     string
+		expectedPHPPath   string
+		expectedExpiredAt string
 	}{
 		{
-			name:                  "success",
-			ftpDir:                "example.com/blog",
-			initScript:            "init.php",
-			initToken:             "xxxxx",
-			errorMessage:          "",
-			expectedFilePath:      "example.com/blog/init.php",
-			expectedErrorKeywords: []string{},
-		},
-		{
-			name:                  "error",
-			ftpDir:                "example.com/blog",
-			initScript:            "init.php",
-			initToken:             "xxxxx",
-			errorMessage:          "error",
-			expectedFilePath:      "",
-			expectedErrorKeywords: []string{"error"},
+			name:    "execute",
+			token:   "asdfghjkklqwertyuiopzxcvbnm1234567890",
+			phpPath: "/usr/local/php",
+			now:     "2021-10-19T20:30:00+09:00",
+
+			expectedToken:     "asdfghjkklqwertyuiopzxcvbnm1234567890",
+			expectedPHPPath:   "/usr/local/php",
+			expectedExpiredAt: "1634643060", // 2021-10-19T20:31:00+09:00
 		},
 	}
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			ftpc := &TestFtpClient{
-				errorMessage: tc.errorMessage,
-			}
-			cms := &WordPress{
-				ftpc:       ftpc,
-				ftpDir:     tc.ftpDir,
-				initScript: tc.initScript,
-				initToken:  tc.initToken,
-			}
-			err := cms.InjectInitScript()
-
-			msg := testError(err, &tc.expectedErrorKeywords)
-			if msg != "" {
-				t.Fatalf(msg)
-			}
-			if err != nil {
-				return
+			cms := &BaserCMS{
+				bcInstallToken:   tc.token,
+				bcInstallPHPPath: tc.phpPath,
 			}
 
-			if tc.expectedFilePath != ftpc.filePath {
-				t.Fatalf("ftpc.filePath wrong. want=%+v, got=%+v", tc.expectedFilePath, ftpc.filePath)
-			}
-
-			content, err := cms.InitScript()
+			iso8601 := "2006-01-02T15:04:05-07:00"
+			tm, err := time.Parse(iso8601, tc.now)
 			if err != nil {
 				t.Fatalf(err.Error())
 			}
-			if *content != ftpc.content {
-				t.Fatalf("ftpc.content wrong.")
+			tm = tm.Local()
+
+			result, _ := cms.BcInstallScript(tm)
+
+			if !strings.Contains(*result, tc.expectedToken) {
+				t.Fatalf("bcInstallScript wrong. want_keyword=%+v", tc.expectedToken)
+			}
+			if !strings.Contains(*result, tc.expectedPHPPath) {
+				t.Fatalf("bcInstallScript wrong. want_keyword=%+v", tc.expectedPHPPath)
+			}
+			if !strings.Contains(*result, tc.expectedExpiredAt) {
+				t.Fatalf("bcInstallScript wrong. want_keyword=%+v", tc.expectedExpiredAt)
 			}
 		})
 	}
 }
 
-func TestWordpress_ExecInit(t *testing.T) {
-	tt := []struct {
-		name         string
-		statusCode   int
-		bodyString   string
-		errorMessage string
-
-		expectedErrorKeywords []string
-	}{
-		{
-			name:         "error_exists",
-			statusCode:   200,
-			bodyString:   "",
-			errorMessage: "timeout error",
-
-			expectedErrorKeywords: []string{"timeout error"},
-		},
-		{
-			name:         "invalid_status_code",
-			statusCode:   500,
-			bodyString:   "",
-			errorMessage: "",
-
-			expectedErrorKeywords: []string{"status code"},
-		},
-		{
-			name:         "valid_response",
-			statusCode:   200,
-			bodyString:   `{"result":true,"error_message":""}`,
-			errorMessage: "",
-
-			expectedErrorKeywords: []string{},
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			httpClient := &TestHttpClient{
-				statusCode:   tc.statusCode,
-				bodyString:   tc.bodyString,
-				errorMessage: tc.errorMessage,
-			}
-			cms := &WordPress{
-				httpc: httpClient,
-			}
-
-			err := cms.ExecInit()
-			msg := testError(err, &tc.expectedErrorKeywords)
-			if msg != "" {
-				t.Fatalf(msg)
-			}
-		})
-	}
-}
-
-func TestWordpress_DeleteInitScript(t *testing.T) {
-	tt := []struct {
-		name string
-
-		ftpDir       string
-		initScript   string
-		errorMessage string
-
-		expectedFilePath      string
-		expectedErrorKeywords []string
-	}{
-		{
-			name:                  "success",
-			ftpDir:                "example.com/blog",
-			initScript:            "init.php",
-			errorMessage:          "",
-			expectedFilePath:      "example.com/blog/init.php",
-			expectedErrorKeywords: []string{},
-		},
-		{
-			name:                  "error",
-			ftpDir:                "example.com/blog",
-			initScript:            "init.php",
-			errorMessage:          "error",
-			expectedFilePath:      "",
-			expectedErrorKeywords: []string{"error"},
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			ftpc := &TestFtpClient{
-				errorMessage: tc.errorMessage,
-			}
-			cms := &WordPress{
-				ftpc:       ftpc,
-				ftpDir:     tc.ftpDir,
-				initScript: tc.initScript,
-			}
-			err := cms.DeleteInitScript()
-
-			msg := testError(err, &tc.expectedErrorKeywords)
-			if msg != "" {
-				t.Fatalf(msg)
-			}
-			if err != nil {
-				return
-			}
-
-			if tc.expectedFilePath != ftpc.filePath {
-				t.Fatalf("ftpc.filePath wrong. want=%+v, got=%+v", tc.expectedFilePath, ftpc.filePath)
-			}
-		})
-	}
-}
-
-func TestWordpress_WpAdminSetupConfig(t *testing.T) {
-	tt := []struct {
-		name         string
-		statusCode   int
-		errorMessage string
-
-		expectedErrorKeywords []string
-	}{
-		{
-			name:         "error_exists",
-			errorMessage: "timeout error",
-
-			expectedErrorKeywords: []string{"timeout error"},
-		},
-		{
-			name:       "status_code_500",
-			statusCode: 500,
-
-			expectedErrorKeywords: []string{"status code is 500"},
-		},
-		{
-			name:       "status_code_200",
-			statusCode: 200,
-
-			expectedErrorKeywords: []string{},
-		},
-	}
-
-	for _, tc := range tt {
-		t.Run(tc.name, func(t *testing.T) {
-			httpClient := &TestHttpClient{
-				statusCode:   tc.statusCode,
-				errorMessage: tc.errorMessage,
-			}
-			cms := &WordPress{
-				httpc: httpClient,
-			}
-			err := cms.WpAdminSetupConfig()
-			msg := testError(err, &tc.expectedErrorKeywords)
-			if msg != "" {
-				t.Fatalf(msg)
-			}
-		})
-	}
-}
-
+/*
 func TestWordpress_WpAdminInstall(t *testing.T) {
 	tt := []struct {
 		name             string
@@ -399,3 +259,4 @@ func TestWordpress_WpAdminInstall(t *testing.T) {
 		})
 	}
 }
+*/

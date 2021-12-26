@@ -7,8 +7,6 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
-
-	"github.com/kinosuke01/cms-installer/pkg/randstr"
 )
 
 type Config struct {
@@ -24,7 +22,7 @@ type Config struct {
 	DBUser     string `json:"db_user" desc:"[optional] DB username"`
 	DBPassword string `json:"db_password" desc:"[optional] DB password"`
 	DBPrefix   string `json:"db_prefix" desc:"[optional] Prefix of table name on WordPress (default=mysite_)"`
-	DBPort     string `json:"db_port" desc:"[optional] DB port number (default = 3306)"`
+	DBPort     string `json:"db_port" desc:"[optional] DB port number (default = 3306 or 5432)"`
 
 	SiteURL      string `json:"site_url" desc:"[required] Site URL"`
 	SiteUser     string `json:"site_user" desc:"[required] LoginID of BaserCMS"`
@@ -33,7 +31,6 @@ type Config struct {
 
 	InitArchiveURL string `json:"init_archive_url"`
 	InitArchiveDir string `json:"init_archive_dir"`
-	InitToken      string `json:"init_token"`
 
 	PHPPath string `json:"php_path" desc:"[optional] php command path (default=php)"`
 }
@@ -47,20 +44,20 @@ func (cnf *Config) init() error {
 		cnf.DBPrefix = "mysite_"
 	}
 
+	if cnf.DBPort == "" {
+		if cnf.DBType == "mysql" {
+			cnf.DBPort = "3306"
+		} else if cnf.DBType == "postgres" {
+			cnf.DBPort = "5432"
+		}
+	}
+
 	if cnf.InitArchiveURL == "" {
 		cnf.InitArchiveURL = initArchiveURL
 	}
 
 	if cnf.InitArchiveDir == "" {
 		cnf.InitArchiveDir = initArchiveDir
-	}
-
-	if cnf.InitToken == "" {
-		token, err := randstr.Generate(64)
-		if err != nil {
-			return err
-		}
-		cnf.InitToken = token
 	}
 
 	if cnf.PHPPath == "" {
