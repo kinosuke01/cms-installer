@@ -61,9 +61,10 @@ $funcs = array(
                     'siteurl' => '',
                     'dbtype' => '',
                     'siteuser' => '',
-                    'sitepassword' => '',    
+                    'sitepassword' => '',
+                    'email' => '',
                 ],
-                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install '' '' '' '' 2>&1",
+                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install '' '' '' '' '' 2>&1",
             ),
             array(
                 'case' => 'required_only',
@@ -73,8 +74,9 @@ $funcs = array(
                     'dbtype' => 'sqlite',
                     'siteuser' => 'bc-admin',
                     'sitepassword' => "abcd%&'()",
+                    'email' => 'bc-admin@example.com',
                 ],
-                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install 'https://example.com' 'sqlite' 'bc-admin' 'abcd%&'\''()' 2>&1",
+                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install 'https://example.com' 'sqlite' 'bc-admin' 'abcd%&'\''()' 'bc-admin@example.com' 2>&1",
             ),
             array(
                 'case' => 'required_only',
@@ -84,6 +86,7 @@ $funcs = array(
                     'dbtype' => 'mysql',
                     'siteuser' => 'bc-admin',
                     'sitepassword' => "abcd%&'()",
+                    'email' => 'bc-admin@example.com',
                     'host' => 'mysql.example.com',
                     'database' => 'bc_test',
                     'login' => 'bc_user',
@@ -93,7 +96,7 @@ $funcs = array(
                     'baseurl' => '/',
                     'data' => 'nada-icons.default',
                 ],
-                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install 'https://example.com' 'mysql' 'bc-admin' 'abcd%&'\''()' --host 'mysql.example.com' --database 'bc_test' --login 'bc_user' --password '%&'\''()0abc' --prefix 'mysite_' --port '3306' --baseurl '/' --data 'nada-icons.default' 2>&1",
+                'expected_result' => "/usr/local/bin/php -q /app/app/Console/cake.php bc_manager install 'https://example.com' 'mysql' 'bc-admin' 'abcd%&'\''()' 'bc-admin@example.com' --host 'mysql.example.com' --database 'bc_test' --login 'bc_user' --password '%&'\''()0abc' --prefix 'mysite_' --port '3306' --baseurl '/' --data 'nada-icons.default' 2>&1",
             ),
         );
         foreach ($tt as $tc) {

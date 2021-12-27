@@ -27,7 +27,7 @@ function build_cmd($params = [], $opts = [])
 
   $cmds = ["$phpPath -q $cake bc_manager install"];
 
-  $reqKeys = ['siteurl', 'dbtype', 'siteuser', 'sitepassword'];
+  $reqKeys = ['siteurl', 'dbtype', 'siteuser', 'sitepassword', 'email'];
   foreach($reqKeys as $key) {
     $val = isset($params[$key]) ? $params[$key] : '';
     $cmds[] = escapeshellarg($val);
