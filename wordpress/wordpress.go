@@ -13,6 +13,7 @@ import (
 	"github.com/kinosuke01/cms-installer/pkg/cmsinit"
 	"github.com/kinosuke01/cms-installer/pkg/ftpc"
 	"github.com/kinosuke01/cms-installer/pkg/httpc"
+	"github.com/kinosuke01/cms-installer/pkg/randstr"
 	"github.com/kinosuke01/cms-installer/pkg/withlog"
 )
 
@@ -85,6 +86,11 @@ func New(cnf *Config) (*WordPress, error) {
 		BasePath: baseURL.Path,
 	})
 
+	initToken, err := randstr.Generate(tokenLen)
+	if err != nil {
+		return nil, err
+	}
+
 	return &WordPress{
 		ftpc:  fc,
 		httpc: hc,
@@ -105,7 +111,7 @@ func New(cnf *Config) (*WordPress, error) {
 		sitePublic:   !cnf.SiteUnpublic,
 
 		initScript:     initScript,
-		initToken:      cnf.InitToken,
+		initToken:      initToken,
 		initArchiveURL: cnf.InitArchiveURL,
 		initArchiveDir: cnf.InitArchiveDir,
 	}, nil
