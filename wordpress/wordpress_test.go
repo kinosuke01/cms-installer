@@ -1,90 +1,14 @@
 package wordpress
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"io/ioutil"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/kinosuke01/cms-installer/pkg/ftpc"
 	"github.com/kinosuke01/cms-installer/pkg/httpc"
+	"github.com/kinosuke01/cms-installer/pkg/testhelper"
 )
-
-func testError(err error, errorKeywords *[]string) string {
-	exists := (err != nil)
-	expectedExists := (len(*errorKeywords) > 0)
-	if expectedExists != exists {
-		return fmt.Sprintf("error exists wrong. want=%+v, got=%+v", expectedExists, exists)
-	}
-	if err != nil {
-		for _, keyword := range *errorKeywords {
-			if !strings.Contains(err.Error(), keyword) {
-				return fmt.Sprintf("error messages wrong. want_keywords=%+v, got=%+v", keyword, err.Error())
-			}
-		}
-	}
-	return ""
-}
-
-type TestFtpClient struct {
-	errorMessage string
-	filePath     string
-	content      string
-}
-
-func (c *TestFtpClient) Upload(filePath string, pContent *string) error {
-	c.filePath = filePath
-	c.content = *pContent
-
-	if c.errorMessage != "" {
-		return errors.New(c.errorMessage)
-	} else {
-		return nil
-	}
-}
-
-func (c *TestFtpClient) Delete(filePath string, onlyExists bool) error {
-	c.filePath = filePath
-
-	if c.errorMessage != "" {
-		return errors.New(c.errorMessage)
-	} else {
-		return nil
-	}
-}
-
-type TestHttpClient struct {
-	statusCode       int
-	bodyString       string
-	responseBodyFile string
-	errorMessage     string
-}
-
-func (c *TestHttpClient) DoRequest(context.Context, *httpc.RequestOptions) (*httpc.Response, error) {
-	if c.errorMessage != "" {
-		return nil, errors.New(c.errorMessage)
-	}
-
-	var bodyBytes []byte
-	if c.bodyString != "" {
-		bodyBytes = []byte(c.bodyString)
-	} else if c.responseBodyFile != "" {
-		b, err := ioutil.ReadFile(c.responseBodyFile)
-		if err != nil {
-			panic(err.Error())
-		}
-		bodyBytes = b
-	}
-
-	res := &httpc.Response{
-		StatusCode: c.statusCode,
-		BodyBytes:  bodyBytes,
-	}
-
-	return res, nil
-}
 
 func TestNew(t *testing.T) {
 	tt := []struct {
@@ -240,8 +164,8 @@ func TestWordpress_InjectInitScript(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			ftpc := &TestFtpClient{
-				errorMessage: tc.errorMessage,
+			ftpc := &ftpc.MockClient{
+				ErrorMessage: tc.errorMessage,
 			}
 			cms := &WordPress{
 				ftpc:       ftpc,
@@ -251,7 +175,7 @@ func TestWordpress_InjectInitScript(t *testing.T) {
 			}
 			err := cms.InjectInitScript()
 
-			msg := testError(err, &tc.expectedErrorKeywords)
+			msg := testhelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
@@ -259,15 +183,15 @@ func TestWordpress_InjectInitScript(t *testing.T) {
 				return
 			}
 
-			if tc.expectedFilePath != ftpc.filePath {
-				t.Fatalf("ftpc.filePath wrong. want=%+v, got=%+v", tc.expectedFilePath, ftpc.filePath)
+			if tc.expectedFilePath != ftpc.FilePath {
+				t.Fatalf("ftpc.filePath wrong. want=%+v, got=%+v", tc.expectedFilePath, ftpc.FilePath)
 			}
 
 			content, err := cms.InitScript()
 			if err != nil {
 				t.Fatalf(err.Error())
 			}
-			if *content != ftpc.content {
+			if *content != ftpc.Content {
 				t.Fatalf("ftpc.content wrong.")
 			}
 		})
@@ -311,17 +235,17 @@ func TestWordpress_ExecInit(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			httpClient := &TestHttpClient{
-				statusCode:   tc.statusCode,
-				bodyString:   tc.bodyString,
-				errorMessage: tc.errorMessage,
+			httpClient := &httpc.MockClient{
+				StatusCode:   tc.statusCode,
+				BodyString:   tc.bodyString,
+				ErrorMessage: tc.errorMessage,
 			}
 			cms := &WordPress{
 				httpc: httpClient,
 			}
 
 			err := cms.ExecInit()
-			msg := testError(err, &tc.expectedErrorKeywords)
+			msg := testhelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
@@ -360,8 +284,8 @@ func TestWordpress_DeleteInitScript(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			ftpc := &TestFtpClient{
-				errorMessage: tc.errorMessage,
+			ftpc := &ftpc.MockClient{
+				ErrorMessage: tc.errorMessage,
 			}
 			cms := &WordPress{
 				ftpc:       ftpc,
@@ -370,7 +294,7 @@ func TestWordpress_DeleteInitScript(t *testing.T) {
 			}
 			err := cms.DeleteInitScript()
 
-			msg := testError(err, &tc.expectedErrorKeywords)
+			msg := testhelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
@@ -378,8 +302,8 @@ func TestWordpress_DeleteInitScript(t *testing.T) {
 				return
 			}
 
-			if tc.expectedFilePath != ftpc.filePath {
-				t.Fatalf("ftpc.filePath wrong. want=%+v, got=%+v", tc.expectedFilePath, ftpc.filePath)
+			if tc.expectedFilePath != ftpc.FilePath {
+				t.Fatalf("ftpc.filePath wrong. want=%+v, got=%+v", tc.expectedFilePath, ftpc.FilePath)
 			}
 		})
 	}
@@ -415,15 +339,15 @@ func TestWordpress_WpAdminSetupConfig(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			httpClient := &TestHttpClient{
-				statusCode:   tc.statusCode,
-				errorMessage: tc.errorMessage,
+			httpClient := &httpc.MockClient{
+				StatusCode:   tc.statusCode,
+				ErrorMessage: tc.errorMessage,
 			}
 			cms := &WordPress{
 				httpc: httpClient,
 			}
 			err := cms.WpAdminSetupConfig()
-			msg := testError(err, &tc.expectedErrorKeywords)
+			msg := testhelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
@@ -472,16 +396,16 @@ func TestWordpress_WpAdminInstall(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			httpClient := &TestHttpClient{
-				statusCode:       tc.statusCode,
-				errorMessage:     tc.errorMessage,
-				responseBodyFile: tc.responseBodyFile,
+			httpClient := &httpc.MockClient{
+				StatusCode:       tc.statusCode,
+				ErrorMessage:     tc.errorMessage,
+				ResponseBodyFile: tc.responseBodyFile,
 			}
 			cms := &WordPress{
 				httpc: httpClient,
 			}
 			err := cms.WpAdminInstall()
-			msg := testError(err, &tc.expectedErrorKeywords)
+			msg := testhelper.CheckError(err, &tc.expectedErrorKeywords)
 			if msg != "" {
 				t.Fatalf(msg)
 			}
