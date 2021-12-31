@@ -7,8 +7,6 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
-
-	"github.com/kinosuke01/cms-installer/pkg/randstr"
 )
 
 type Config struct {
@@ -33,7 +31,6 @@ type Config struct {
 
 	InitArchiveURL string `json:"init_archive_url"`
 	InitArchiveDir string `json:"init_archive_dir"`
-	InitToken      string `json:"init_token"`
 }
 
 func (cnf *Config) init() error {
@@ -51,14 +48,6 @@ func (cnf *Config) init() error {
 
 	if cnf.InitArchiveDir == "" {
 		cnf.InitArchiveDir = initArchiveDir
-	}
-
-	if cnf.InitToken == "" {
-		token, err := randstr.Generate(64)
-		if err != nil {
-			return err
-		}
-		cnf.InitToken = token
 	}
 
 	return nil

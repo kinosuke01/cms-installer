@@ -32,8 +32,9 @@ func TestNew(t *testing.T) {
 		expectedSiteEmail    string
 		expectedSitePublic   bool
 
-		expectedInitScript string
-		expectedArchiveURL string
+		expectedInitScript   string
+		expectedArchiveURL   string
+		expectedInitTokenLen int
 
 		expectedErrorExists   bool
 		expectedErrorMessages []string
@@ -81,6 +82,7 @@ func TestNew(t *testing.T) {
 			expectedSiteEmail:    "site@example.com",
 			expectedSitePublic:   true,
 			expectedInitScript:   "init.php",
+			expectedInitTokenLen: 64,
 			expectedArchiveURL:   "https://ja.wordpress.org/latest-ja.zip",
 		},
 	}
@@ -121,6 +123,10 @@ func TestNew(t *testing.T) {
 				if kvv[1] != kvv[2] {
 					t.Fatalf("%+v wrong. want=%+v, got=%+v", kvv[0], kvv[1], kvv[2])
 				}
+			}
+
+			if tc.expectedInitTokenLen != len(cms.initToken) {
+				t.Fatalf("initTokenLen wrong. want=%+v, got=%+v", tc.expectedInitTokenLen, len(cms.initToken))
 			}
 
 			if tc.expectedSitePublic != cms.sitePublic {
